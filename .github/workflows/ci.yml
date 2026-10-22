@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --frozen
+      - run: uv run --frozen pytest -q
+
+  quality:
+    name: Lint and packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+      - run: uv sync --frozen
+      - run: uv run --frozen ruff check src tests scripts
+      - run: uv run --frozen ruff format --check src tests scripts
+      - run: uv run --frozen python scripts/generate_tool_reference.py --check
+      - run: uv build
+      - run: uv run --frozen python scripts/check_artifacts.py dist/*
+      - name: Install the wheel in a clean environment
+        run: |
+          uv venv /tmp/tvh-wheel-smoke
+          uv pip install --python /tmp/tvh-wheel-smoke/bin/python dist/*.whl
+          /tmp/tvh-wheel-smoke/bin/tvheadend-mcp --help
+
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: docker build -t tvheadend-mcp:ci .
+      - run: docker run --rm tvheadend-mcp:ci --help
+
+  release:
+    name: GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test, quality, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+      - name: Verify release version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          uv run --frozen python - <<'PY'
+          import os
+          import pathlib
+          import tomllib
+          from tvheadend_mcp import __version__
+          version = tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version']
+          assert os.environ['RELEASE_TAG'] == f'v{version}'
+          assert __version__ == version
+          assert pathlib.Path(f'docs/releases/{version}.md').is_file()
+          PY
+      - run: uv build
+      - run: uv run --frozen python scripts/check_artifacts.py dist/*
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          (cd dist && sha256sum *.whl *.tar.gz > SHA256SUMS)
+          gh release create "$RELEASE_TAG" dist/* --verify-tag \
+            --title "Tvheadend MCP $RELEASE_TAG" \
+            --notes-file "docs/releases/${RELEASE_TAG#v}.md"

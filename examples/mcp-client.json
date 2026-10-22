@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "tvheadend": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/absolute/path/tvheadend-mcp",
+        "--frozen",
+        "tvheadend-mcp",
+        "--env-file",
+        "/absolute/path/tvheadend.env"
+      ]
+    }
+  }
+}
