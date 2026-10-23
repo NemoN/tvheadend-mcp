@@ -5,13 +5,25 @@
 Installation ohne Checkout: siehe [englische Kurzanleitung](README.md#quick-start).
 Die Versionsnummer und den Pfad der Env-Datei in den Beispielen anpassen.
 
-Eigener MCP-Server mit **39 Werkzeugen** für Tvheadend: DVR und die über dessen
+Eigener MCP-Server mit **53 Werkzeugen** für Tvheadend: DVR und die über dessen
 JSON-API erreichbare DVB-Konfiguration. Er verwendet das offizielle MCP Python
 SDK 2.x und unterstützt stdio sowie Streamable HTTP auf dem lokalen Rechner.
 
 Der Server liest Klassen, Feldtypen, Optionen und aktuelle Werte aus der
 verbundenen Tvheadend-Installation. Damit sind auch erweiterte Einstellungen
 zugänglich, ohne sie auf eine feste Auswahl von Tuner-Modellen zu beschränken.
+
+## Neu in 0.2.0
+
+EPG-Grabber und Zeitpläne verwalten, Quellen zuordnen, EPG-Abdeckung messen,
+Empfang anhand von MPEG-TS-/Mediendaten testen sowie Sender- und
+Netzwerkbereinigung planen. Die [Anleitung zu den neuen Abläufen](docs/operations.md)
+beschreibt die Voraussetzungen, Grenzen und Wiederherstellung.
+
+Tunerbezogene Tests isolieren den gewählten Tuner vorübergehend und benötigen
+einen inaktiven Server ohne bald anstehende Aufnahmen. Vor Änderungen wird ein
+lokales Wiederherstellungsjournal geschrieben. Empfangstests und das Anwenden
+von Bereinigungsplänen liefern standardmäßig eine Vorschau.
 
 ## Funktionsumfang
 
@@ -198,7 +210,8 @@ die Zeitzone des Tvheadend-Servers.
 ## Vorschau und Snapshots
 
 Alle schreibenden Werkzeuge besitzen `dry_run`: `true` liefert den geplanten
-Endpunkt und dessen Parameter, ohne zu schreiben. Normalerweise ist `dry_run=false`.
+Endpunkt und dessen Parameter, ohne zu schreiben. Normalerweise ist `dry_run=false`; `probe_reception`,
+`apply_maintenance_plan` und `restore_snapshot` liefern standardmäßig eine Vorschau.
 Mit `TVH_READ_ONLY=true` lassen sich Schreibzugriffe zentral sperren; lesende
 Abfragen und Vorschauen funktionieren weiter.
 
@@ -226,6 +239,9 @@ Alle Namen besitzen das Präfix `tvh_`.
 | Muxes | `list_muxes`, `mux_schema`, `create_mux` |
 | Services/Sender | `list_services`, `map_services`, `mapper_status`, `stop_mapper`, `list_channels`, `create_channel`, `assign_services`, `list_channel_tags`, `create_channel_tag` |
 | DVR/EPG | `search_epg`, `list_recordings`, `schedule_recording`, `create_timer`, `recording_action`, `list_dvr_rules`, `create_dvr_rule`, `list_dvr_profiles`, `create_dvr_profile` |
+| EPG-Verwaltung | `get_epg_config`, `update_epg_config`, `list_epg_modules`, `update_epg_module`, `list_epg_sources`, `assign_epg_sources`, `trigger_epg_grab`, `epg_coverage` |
+| Empfangstest | `probe_reception`, `reception_recoveries` |
+| Bereinigung | `audit_channels`, `plan_channel_merge`, `plan_network_consolidation`, `apply_maintenance_plan` |
 | Snapshots | `snapshot`, `restore_snapshot` |
 
 `tvh_api_read` erreicht zusätzliche lesende Endpunkte, etwa EPG-Grabber, Bouquets,

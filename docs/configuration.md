@@ -14,7 +14,8 @@ An explicitly specified missing file is an error.
 | `TVH_VERIFY_SSL` | `true` | Verify the Tvheadend HTTPS certificate |
 | `TVH_TIMEOUT` | `30` | HTTP timeout in seconds |
 | `TVH_TIMEZONE` | `Europe/Berlin` | Timezone for diagnostics; does not change Tvheadend's server timezone |
-| `TVH_READ_ONLY` | `false` | Block writes; the provided `.env.example` explicitly sets `true` |
+| `TVH_READ_ONLY` | `false` | Block writes and active reception probes; the example explicitly sets `true` |
+| `TVH_STATE_DIR` | `~/.local/state/tvheadend-mcp` | Absolute local folder for tuner-isolation recovery journals; created only when needed |
 
 Do not put credentials in the URL. URL query strings and fragments are rejected.
 The HTTP client does not follow redirects or inherit proxy settings from the
@@ -79,3 +80,16 @@ not expose a service that binds to the container's loopback interface.
 | Stale or missing tuner UUID | Refresh `tvh_hardware_tree`; topology changes can recreate child nodes |
 | Missing channels/services | Follow all result pages and check native scan/mapper status |
 | SAT>IP device not discovered | See the [SAT>IP section](dvb-workflow.md#satip-discovery) |
+
+## Tuner-isolation state
+
+Recovery journals contain frontend UUIDs and prior enabled states, never Tvheadend
+credentials. New files are created with mode 0600, the state folder with mode
+0700. They are removed after successful restoration. Use a persistent folder
+writable by the MCP process. In Docker, mount such a folder and configure
+`TVH_STATE_DIR=/state`; the image runs as UID/GID 65534.
+
+After a process/host crash, use `tvh_reception_recoveries` and inspect the saved
+settings before an explicit `tvh_restore_snapshot`. There is no automatic startup
+restoration that might overwrite intentional changes by another administrator.
+See [operations](operations.md) for the full recovery procedure.

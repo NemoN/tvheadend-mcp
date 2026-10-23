@@ -58,15 +58,17 @@ Keep regional variants intentional. Channel numbering and tags can be managed
 through `tvh_update_node` and the channel-tag tools.
 
 Check native EIT/EPG-related fields exposed by the networks, muxes, services and
-channels. `tvh_api_read` can inspect allowlisted EPG-grabber configuration and
-channel grids; its general-purpose access is read-only. The MCP server does not
-provide an unrestricted API-write endpoint or install XMLTV grabbers. Global
-grabber settings without a writable idnode need Tvheadend's own UI/configuration.
+channels. Use `tvh_get_epg_config` / `tvh_update_epg_config` for global grabber settings,
+`tvh_list_epg_modules` / `tvh_update_epg_module` for installed modules,
+`tvh_assign_epg_sources` for mappings, and `tvh_trigger_epg_grab` for OTA/internal
+collection. The MCP server does not install XMLTV executables or upload external
+XMLTV socket data. See the [operations guide](operations.md).
 
 Allow time for over-the-air EPG collection, then check multiple channels and
 future times. A service can tune successfully while providing little or no EPG.
-EPG search alone does not prove reception quality. Validate actual viewing or a
-short recording in a suitable client and inspect Tvheadend's input status/errors.
+EPG search alone does not prove reception quality. Use `tvh_probe_reception` for bounded transport/media-packet tests and
+`tvh_epg_coverage` for EPG gaps. Actual audio/video decoding still needs a player.
+See the [operations guide](operations.md) for tuner isolation and recovery.
 
 ## SAT>IP discovery
 

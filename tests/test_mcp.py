@@ -21,6 +21,10 @@ async def test_mcp_tool_schemas_calls_resources_and_errors(admin, fake):
         assert indexed["tvh_status"].annotations.read_only_hint is True
         assert indexed["tvh_update_node"].annotations.read_only_hint is False
         assert indexed["tvh_update_node"].input_schema["required"] == ["uuid", "settings"]
+        assert indexed["tvh_probe_reception"].annotations.read_only_hint is False
+        assert indexed["tvh_plan_channel_merge"].annotations.read_only_hint is True
+        for name in ("tvh_probe_reception", "tvh_apply_maintenance_plan"):
+            assert indexed[name].input_schema["properties"]["dry_run"]["default"] is True
         status = await client.call_tool("tvh_status", {})
         assert not status.is_error
         assert status.structured_content["results"]["serverinfo"]["sw_version"] == "4.3-test"
@@ -58,7 +62,7 @@ async def test_stdio_process_initializes_without_touching_tvheadend(tmp_path):
     )
     async with Client(params) as client:
         tools = await client.list_tools()
-        assert len(tools.tools) == 39
+        assert len(tools.tools) == 53
         status = await client.call_tool("tvh_status", {})
         assert not status.is_error
         assert "Connection failed" in status.structured_content["results"]["serverinfo"]["error"]

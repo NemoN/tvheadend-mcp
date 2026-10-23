@@ -37,6 +37,13 @@ Snapshot selected objects before significant changes; snapshots are field snapsh
 not full backups and cannot resurrect deleted nodes or media. Permanent recording
 deletion is recording_action(remove_files); cancel/stop have distinct semantics.
 Hardware/driver support and the running Tvheadend build determine available features.
+EPG administration: inspect tvh_get_epg_config/tvh_list_epg_modules before editing;
+tvh_trigger_epg_grab queues collection and tvh_epg_coverage measures resulting gaps.
+Use tvh_audit_channels and explicit merge/consolidation plans before cleanup.
+tvh_apply_maintenance_plan and tvh_probe_reception preview by default. Review their
+recovery snapshots before execution. Tuner-specific probes temporarily isolate
+the frontend, require an idle server and journal settings for crash recovery.
+Check tvh_reception_recoveries after an interrupted probe; restoration is explicit.
 """
 
 WORKFLOW = """Tvheadend DVB/DVR workflow
@@ -58,6 +65,13 @@ WORKFLOW = """Tvheadend DVB/DVR workflow
 10. tvh_snapshot returns JSON for selected writable settings; tvh_restore_snapshot
     previews by default. Back up Tvheadend's configuration directory separately for
     recovery from object deletion or reception-topology changes.
+11. tvh_get_epg_config/tvh_update_epg_config, tvh_list_epg_modules/tvh_update_epg_module,
+    tvh_assign_epg_sources and tvh_trigger_epg_grab manage installed native grabbers.
+    Use tvh_epg_coverage after collection to measure gaps and description presence.
+12. tvh_probe_reception previews a bounded service-stream check. Explicit tuner_uuid
+    temporarily isolates that frontend; review changes and recovery snapshot first.
+13. tvh_audit_channels; tvh_plan_channel_merge or tvh_plan_network_consolidation.
+    Review the plan, then tvh_apply_maintenance_plan with its unexpired plan_id.
 
 Native advanced options, EPG mappings, channel groups, bouquets, priorities, scan
 parameters, FEC, PLS/PLP and SAT>IP settings are reached through node metadata and
@@ -87,6 +101,14 @@ READ_TOOLS = {
     "snapshot",
     "api_read",
     "diagnose_network",
+    "get_epg_config",
+    "list_epg_modules",
+    "list_epg_sources",
+    "epg_coverage",
+    "audit_channels",
+    "plan_channel_merge",
+    "plan_network_consolidation",
+    "reception_recoveries",
 }
 WRITE_TOOLS = {
     "discover_satip",
@@ -107,6 +129,12 @@ WRITE_TOOLS = {
     "create_dvr_profile",
     "delete_node",
     "restore_snapshot",
+    "update_epg_config",
+    "update_epg_module",
+    "assign_epg_sources",
+    "trigger_epg_grab",
+    "apply_maintenance_plan",
+    "probe_reception",
 }
 
 

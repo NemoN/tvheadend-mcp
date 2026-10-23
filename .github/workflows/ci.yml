@@ -59,6 +59,11 @@ jobs:
           persist-credentials: false
       - run: docker build -t tvheadend-mcp:ci .
       - run: docker run --rm tvheadend-mcp:ci --help
+      - name: Validate container runtime settings
+        run: |
+          docker run --rm -e TVH_URL=http://127.0.0.1:1 -e TVH_AUTH=none \
+            --entrypoint python tvheadend-mcp:ci \
+            -c 'from tvheadend_mcp.config import Settings; Settings.from_env(); print("Runtime settings OK")'
 
   release:
     name: GitHub Release

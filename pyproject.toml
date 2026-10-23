@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tvheadend-admin-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server for Tvheadend DVR and complete API-exposed DVB configuration"
 readme = "README.md"
 requires-python = ">=3.11"

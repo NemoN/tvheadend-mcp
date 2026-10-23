@@ -4,7 +4,7 @@
       "command": "uvx",
       "args": [
         "--from",
-        "git+https://github.com/NemoN/tvheadend-mcp.git@v0.1.0",
+        "git+https://github.com/NemoN/tvheadend-mcp.git@v0.2.0",
         "tvheadend-mcp",
         "--env-file",
         "/absolute/path/tvheadend.env"

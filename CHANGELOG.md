@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-10-23
+
+- 14 additional tools (53 total) for EPG administration, reception and maintenance.
+- Native global EPG settings, installed module control, source assignment and OTA/internal triggers.
+- Paginated EPG coverage reports with overlap-aware time coverage and description presence.
+- Bounded MPEG-TS/media-packet probes, signal units and input-counter deltas.
+- Explicit tuner isolation with idle/DVR checks, restoration and private recovery journals.
+- Duplicate/HD-SD channel audits and reviewed merge/consolidation plans.
+- Expiring plan IDs, stale-state checks, no object deletion and guarded rollback.
+
 ## 0.1.0 — 2026-10-22
 
 Initial public release.

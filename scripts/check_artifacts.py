@@ -43,6 +43,8 @@ def check_name(name: str, *, wheel: bool) -> None:
     for part in path.parts:
         if part.startswith(".env") and part != ".env.example":
             raise ValueError(f"Environment file in artifact: {name}")
+        if part.startswith("reception-") and part.endswith(".json"):
+            raise ValueError(f"Recovery journal in artifact: {name}")
         if part.endswith((".pem", ".key", ".pyc", ".pyo")) or part == ".DS_Store":
             raise ValueError(f"Private/generated file in artifact: {name}")
     top = path.parts[0]

@@ -6,7 +6,7 @@
 **English** · [Deutsch](README.de.md)
 
 An MCP server for **Tvheadend DVR, EPG and API-exposed DVB configuration**.
-Its 39 tools let an MCP client inspect and configure tuners, networks, muxes,
+Its 53 tools let an MCP client inspect and configure tuners, networks, muxes,
 services and channels, including satellite reception with DiSEqC and Unicable/JESS.
 
 The server reads the running Tvheadend instance's classes, field metadata and
@@ -22,9 +22,10 @@ No AI service or API key is required by this server.
 | Satellite | Satconfig, LNB, DiSEqC, rotor and Unicable/JESS fields exposed by the device's child nodes |
 | Networks and muxes | Create, inspect, update, assign, scan and delete; use the connected server's schemas |
 | Channels | Inspect services, run the native mapper, assign multiple services, manage channel tags and EPG fields |
-| DVR and EPG | Search EPG, schedule event recordings and manual timers, manage autorec/timerec rules and recording profiles |
-| Diagnostics | Server version, input status/signal values, subscriptions and scan progress |
-| Change control | Field validation, `dry_run` previews, optional read-only mode and selected-object snapshots |
+| DVR and EPG | Search and measure EPG, configure grabbers/schedules, map sources, trigger collection, manage recordings and rules |
+| Diagnostics | Server version, signal values, bounded MPEG-TS reception probes, input error deltas and EPG coverage |
+| Maintenance | Duplicate/HD-SD audit, reviewed channel merges and DVB network consolidation without object deletion |
+| Change control | Field validation, previews, read-only mode, snapshots, expiring plans and guarded rollback |
 
 “API-exposed” is an important boundary: drivers, firmware, physical wiring and
 operating-system networking are outside this server. Some builds omit classes or
@@ -39,7 +40,7 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and use Py
 ```bash
 git clone https://github.com/NemoN/tvheadend-mcp.git
 cd tvheadend-mcp
-git checkout v0.1.0
+git checkout v0.2.0
 uv sync --frozen
 cp .env.example .env
 ```
@@ -101,7 +102,7 @@ See [examples](examples/).
 Alternatively, install directly from the versioned Git source without a checkout:
 
 ```bash
-uvx --from git+https://github.com/NemoN/tvheadend-mcp.git@v0.1.0 \
+uvx --from git+https://github.com/NemoN/tvheadend-mcp.git@v0.2.0 \
   tvheadend-mcp --env-file /absolute/path/tvheadend.env
 ```
 
@@ -133,6 +134,17 @@ Follow the [DVB setup guide](docs/dvb-workflow.md) for tuners, Unicable, SAT>IP,
 networks, scans, channel mapping and EPG. The same basic workflow is available to
 MCP clients as the resource `tvheadend://workflow`.
 
+## New in 0.2.0
+
+See the [EPG, reception and maintenance guide](docs/operations.md) for complete
+workflows and recovery limits. The new tools can measure EPG time coverage and
+description presence, manage native grabbers, test received media packets, and
+prepare channel/network cleanup plans that preserve retained channel UUIDs.
+
+A tuner-specific probe temporarily isolates the selected frontend, requires an
+idle server and no imminent DVR, and records a recovery journal before changing
+settings. Probes and maintenance execution **preview by default**.
+
 ## Tool reference
 
 All tools start with `tvh_`. The [complete reference](docs/tools.md) documents
@@ -146,6 +158,9 @@ their arguments and descriptions.
 | Muxes | `list_muxes`, `mux_schema`, `create_mux` |
 | Services and channels | `list_services`, `map_services`, `mapper_status`, `stop_mapper`, `list_channels`, `create_channel`, `assign_services`, `list_channel_tags`, `create_channel_tag` |
 | DVR and EPG | `search_epg`, `list_recordings`, `schedule_recording`, `create_timer`, `recording_action`, `list_dvr_rules`, `create_dvr_rule`, `list_dvr_profiles`, `create_dvr_profile` |
+| EPG administration | `get_epg_config`, `update_epg_config`, `list_epg_modules`, `update_epg_module`, `list_epg_sources`, `assign_epg_sources`, `trigger_epg_grab`, `epg_coverage` |
+| Reception | `probe_reception`, `reception_recoveries` |
+| Maintenance | `audit_channels`, `plan_channel_merge`, `plan_network_consolidation`, `apply_maintenance_plan` |
 | Snapshots | `snapshot`, `restore_snapshot` |
 
 List calls default to 100 entries, EPG searches to 50; the maximum is 1000 per
@@ -160,7 +175,9 @@ with `frequency_hz`. Symbol rates use symbols per second.
 ## Changes and recovery
 
 Write tools accept `dry_run=true` to preview their endpoint and parameters.
-Normally they execute immediately; `restore_snapshot` previews by default.
+Normally they execute immediately; `restore_snapshot`, `probe_reception` and
+`apply_maintenance_plan` preview by default. Maintenance planning never writes to
+Tvheadend; applying a plan requires its unexpired ID from the same process.
 `TVH_READ_ONLY=true` blocks writes while allowing reads and previews.
 
 Snapshots contain selected writable settings, excluding password, read-only and
@@ -183,7 +200,9 @@ docker run --rm -i --env-file .env tvheadend-mcp
 Use `-i` without `-t` for stdio. `TVH_URL` must resolve and be reachable from the
 container; `localhost` inside the container refers to that container. The image
 runs as an unprivileged user and installs hashed runtime dependencies from
-`requirements.lock`. No prebuilt container image is currently published.
+`requirements.lock`. No prebuilt container image is currently published. For tuner-isolation probes,
+mount a persistent state folder writable by UID 65534 and set `TVH_STATE_DIR` to
+that folder inside the container (for example `/state`).
 
 ## Development
 

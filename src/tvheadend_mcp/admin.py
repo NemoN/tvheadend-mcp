@@ -7,6 +7,9 @@ from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
 from .client import JSON, TvheadendClient, TvheadendError
+from .epg import EpgTools
+from .maintenance import MaintenanceTools
+from .reception import ReceptionTools
 from .schema import properties, uuid_hex, validate_fields, values
 
 
@@ -19,7 +22,7 @@ def as_dict(data: JSON) -> dict[str, Any]:
     return data if isinstance(data, dict) else {"entries": data}
 
 
-class TvheadendAdmin:
+class TvheadendAdmin(EpgTools, MaintenanceTools, ReceptionTools):
     def __init__(self, client: TvheadendClient):
         self.client = client
         # Serialize read/modify/write sequences made through this MCP process.
