@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/NemoN/tvheadend-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/NemoN/tvheadend-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Tvheadend MCP on AI Agents Listing](https://aiagentslisting.com/tvheadend-mcp/badge.svg?claim=8a56516f639f428420e8e74afe08185c)](https://aiagentslisting.com/mcp/tvheadend-mcp)
 
 **English** · [Deutsch](README.de.md)
 
