@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Tvheadend MCP on AI Agents Listing](https://aiagentslisting.com/tvheadend-mcp/badge.svg?claim=8a56516f639f428420e8e74afe08185c)](https://aiagentslisting.com/mcp/tvheadend-mcp)
 
+<a href="https://www.buymeacoffee.com/nemon" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/white_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
 **English** · [Deutsch](README.de.md)
 
 An MCP server for **Tvheadend DVR, EPG and API-exposed DVB configuration**.
